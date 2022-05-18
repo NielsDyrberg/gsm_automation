@@ -1,0 +1,33 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+package "ATExtended" {
+    enum EExtended
+
+    class ATExtended
+
+    class ATTest
+    note top: Test command: AT+<x>=?
+
+    class ATRead
+    note top: Read Command: AT+<x>? \n\
+
+    class ATWrite
+    note top: Write Command: AT+<x>=<...> \n\
+
+    class ATExecution
+    note top: Execution Command: AT+<x>
+}
+
+ATExtended --o ATTest
+ATExtended --o ATRead
+ATExtended --o ATWrite
+ATExtended --o ATExecution
+ATExtended --* EExtended
+
+ATTest --o EExtended
+ATRead --o EExtended
+ATWrite --o EExtended
+ATExecution --o EExtended
+
+@enduml

@@ -21,13 +21,13 @@ Todo list:
 #TODO: Save numbers in a hashed file
 #TODO: Refactor use of AT conmmands
 
-import serial
 from time import sleep
-import executers
+from .SendATCommands import SendATCommands
+from .executers.ExecutionHandler import ExecutionHandler
 
 class GSMModule:
-    execute = executers.ExecutionHandler()
-    ser = serial.Serial("/dev/ttyS0", 9600)  # Open port with baud rate'
+    execute = ExecutionHandler()
+    at = SendATCommands()
 
     def __init__(self, contact_number):
         if contact_number is not None:
@@ -35,92 +35,29 @@ class GSMModule:
         else:
             raise ValueError("Contact number can't be None")
 
-    def _clean_reply(self, _reply):
-        """
-        Removes GSM junk from received message
-        :param _reply: The message to clean
-        :return: The cleaned msg
-        """
-        #fixme: make a generic msg cleaner
-        cleaned_reply = ""
-        reply = str(_reply).lower()
-        if "ok" in reply:
-            return "ok"
-        elif "diesel" in reply:
-            return "diesel"
-        return cleaned_reply
-
-    def assert_ok(self, message):
-        ret_value = b"OK" in message
-        if ret_value:
-            print("Msg: OK")
-        else:
-            print("Msg: Not OK")
-        return ret_value
-
     def is_ready(self):
-        # Resetting to defaults
-        cmd = b"ATZ\r"
-        print("Cmd: " + str(cmd))
-        self.ser.write(cmd)
-        sleep(2)
-        reply = self.ser.read(self.ser.inWaiting())
-        return self.assert_ok(reply)
+        return self.at.is_ready()
 
     def send_sms(self, message_to_send):
-        cmd = b"AT+CMGF=1\r"
-        print("Sending: " + str(cmd))
-        self.ser.write(cmd)  #Set in Text mode
-        sleep(0.3)
-        reply = self.ser.read(self.ser.inWaiting())
-        sleep(0.200)
-
-        cmd = b"AT+CMGS=\"" + bytes(self.contact_number, "utf-8") + b"\"\r"
-        print(cmd)
-        self.ser.write(cmd)  # Set in Text mode
-        sleep(0.3)
-        reply = self.ser.read(self.ser.inWaiting())
-        print(reply)
-        sleep(0.200)
-
-        cmd = bytes(message_to_send, "utf-8") + b"\r"
-        print(cmd)
-        self.ser.write(cmd)  # Set in Text mode
-        sleep(0.3)
-        reply = self.ser.read(self.ser.inWaiting())
-        print(reply)
-
-        cmd = b"\x1A\r"
-        print(cmd)
-        self.ser.write(cmd)  # Set in Text mode
-        sleep(0.3)
-        reply = self.ser.read(self.ser.inWaiting())
-        print(reply)
+        self.at.set_to_text_mode()
+        self.at.set_contact_number(self.contact_number)
+        self.at.send_txt(message_to_send)
         sleep(0.500)
-        while self.ser.in_waiting:
-            print(self.ser.readline())
-            print(self.ser.readline())
-            sleep(0.400)
+        self.at.read_rest()
 
     def receive_msg(self):
-        self.ser.write(b"AT+CMGF=1\r")  # set to text mode
+        self.at.set_to_text_mode()  # set to text mode
         sleep(3)
-        self.ser.write(b'AT+CMGDA="DEL ALL"\r')  # delete all SMS
+        self.at.delete_all_txt()
         sleep(3)
-        _ = self.ser.read(self.ser.inWaiting())  # Clean buffer
+        self.at.clear_rx_buffer()
         print("Listening for incomming SMS...")
         while True:
-            reply = self.ser.read(self.ser.inWaiting())
-            if reply != b"":
-                self.ser.write(b"AT+CMGR=1\r")
-                sleep(3)
-                reply = self.ser.read(self.ser.inWaiting())
-                print("SMS received. Content:")
-                print(reply)
-                reply = self._clean_reply(reply)
+            if self.at.in_waiting():
+                reply = self.at.read_message()
                 self.execute.handler(reply)
                 sleep(3)
-                self.ser.write(b'AT+CMGDA="DEL ALL"\r')  # delete all
+                self.at.delete_all_txt()
                 sleep(3)
-                self.ser.read(self.ser.inWaiting())  # Clear buf
+                self.at.clear_rx_buffer()
             sleep(5)

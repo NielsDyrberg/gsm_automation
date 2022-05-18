@@ -1,0 +1,79 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+package "ATCommands" {
+    enum EBasic
+    enum ESParameter
+
+    class ATCommands
+    {
+    - basic: ATBasic
+    - s_parameter: ATSParameter
+    - extended: ATExtended
+    }
+
+    class ATBasic
+    note top: AT<x><n> or AT&<x><n>, \n\
+    where " <x>"is the Command, \n\
+    and "<n>"is/are the argument(s) \n\
+    for that Command.
+
+    class ATSParameter
+    note bottom: ATS<n>=<m>, \n\
+    where "<n>" is the index of the S \n\
+    register to set, and "<m>"is the \n\
+    value to assign to it.
+
+    package "ATExtended" {
+
+    enum EExtended
+
+    class ATTest
+    note top: Test command: AT+<x>=?
+
+    class ATRead
+    note top: Read Command: AT+<x>? \n\
+
+    class ATWrite
+    note top: Write Command: AT+<x>=<...> \n\
+
+    class ATExecution
+    note top: Execution Command: AT+<x>
+    }
+
+    abstract class ATSyntaxInterface
+    {
+    + String build_command(String cmd_to_encapsulate)
+    + list<String> extract_command(String encapsulated_cmd)
+    }
+}
+
+
+ATCommands ..o ATBasic
+ATCommands ..o ATSParameter
+ATCommands ..o ATTest
+ATCommands ..o ATRead
+ATCommands ..o ATWrite
+ATCommands ..o ATExecution
+
+ATCommands ..> EBasic
+ATCommands ..> ESParameter
+ATCommands ..> EExtended
+
+ATBasic ..* EBasic
+ATSParameter ..* ESParameter
+ATTest ..* EExtended
+ATRead ..* EExtended
+ATWrite ..* EExtended
+ATExecution ..* EExtended
+
+ATCommands --> ATSyntaxInterface
+ATBasic --> ATSyntaxInterface
+ATSParameter --> ATSyntaxInterface
+ATTest --> ATSyntaxInterface
+ATRead --> ATSyntaxInterface
+ATWrite --> ATSyntaxInterface
+ATExecution --> ATSyntaxInterface
+
+@enduml

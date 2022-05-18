@@ -5,7 +5,7 @@ Database execution
 """
 
 
-from ExecutersInterface import ExecutersInterface
+from .ExecutersInterface import ExecutersInterface
 import mysql.connector
 from decouple import config
 
