@@ -1,9 +1,14 @@
+import attrs, attr
 
-from .ATSyntaxInterface import ATSyntaxInterface
+@attr.s
+class ATSParameter:
+    at = "ATS"
+    cmd = attr.ib()
+    cmd_argument = attr.ib(default=None)
 
-class ATSParameter(ATSyntaxInterface):
-    def build_command(self, cmd_to_encapsulate):
-        return super().build_command(cmd_to_encapsulate)
+    def to_string(self) -> str:
+        pass
 
-    def extract_command(self, encapsulated_cmd) -> list:
-        return super().extract_command(encapsulated_cmd)
+    @classmethod
+    def from_string(cls, encapsulated_cmd):
+        pass

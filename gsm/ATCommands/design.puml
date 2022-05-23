@@ -25,22 +25,7 @@ package "ATCommands" {
     register to set, and "<m>"is the \n\
     value to assign to it.
 
-    package "ATExtended" {
-
-    enum EExtended
-
-    class ATTest
-    note top: Test command: AT+<x>=?
-
-    class ATRead
-    note top: Read Command: AT+<x>? \n\
-
-    class ATWrite
-    note top: Write Command: AT+<x>=<...> \n\
-
-    class ATExecution
-    note top: Execution Command: AT+<x>
-    }
+    package "ATExtended" {}
 
     abstract class ATSyntaxInterface
     {
@@ -52,28 +37,16 @@ package "ATCommands" {
 
 ATCommands ..o ATBasic
 ATCommands ..o ATSParameter
-ATCommands ..o ATTest
-ATCommands ..o ATRead
-ATCommands ..o ATWrite
-ATCommands ..o ATExecution
+ATCommands ..o "ATExtended"
 
 ATCommands ..> EBasic
 ATCommands ..> ESParameter
-ATCommands ..> EExtended
 
 ATBasic ..* EBasic
 ATSParameter ..* ESParameter
-ATTest ..* EExtended
-ATRead ..* EExtended
-ATWrite ..* EExtended
-ATExecution ..* EExtended
 
 ATCommands --> ATSyntaxInterface
 ATBasic --> ATSyntaxInterface
 ATSParameter --> ATSyntaxInterface
-ATTest --> ATSyntaxInterface
-ATRead --> ATSyntaxInterface
-ATWrite --> ATSyntaxInterface
-ATExecution --> ATSyntaxInterface
 
 @enduml
